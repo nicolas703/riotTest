@@ -1,0 +1,19 @@
+{
+  "gameId": 1416264643,
+  "gameVersion": "14.11.589.9418",
+  "mapId": 11,
+  "championId": 222,
+  "championName": "Jinx",
+  "item0": 3031,
+  "item1": 6672,
+  "item2": 3006,
+  "item3": 0,
+  "item4": 0,
+  "item5": 0,
+  "item6": 3363,
+  "role": "CARRY",
+  "win": false,
+  "platformId": "LA2",
+  "queueId": 440,
+  "championIdBanned": 122
+}
