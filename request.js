@@ -1,13 +1,12 @@
 const axios = require('axios');
 const fs = require('fs');
+const { MongoClient } = require('mongodb');
 
-const apiKey = "RGAPI-3838197b-a125-4fcb-844d-4a34b0147752";
-const apiRegion = "americas"; // americas, europe, asia, esports
-const url = `https://${apiRegion}.api.riotgames.com`;
+const apiKey = "RGAPI-9fc415e5-27c3-441a-a2a0-ea1cb3039100";
 
 const playersNames = [
-    "Tio_Heimer#LAS",
-    "Nando8#Nando"
+    "Tio_Heimer#LAS#americas",
+    "Nando8#Nando#americas"
 ];
 
 // Pausa la ejecución durante el tiempo especificado (en milisegundos)
@@ -16,8 +15,8 @@ const sleep = (ms) => {
 }
 
 // Obtiene el puuid
-const getPuuid = async (gameName, tagLine) => {
-    const getPuuidUrl = `${url}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${apiKey}`;
+const getPuuid = async (gameName, tagLine, apiRegion) => {
+    const getPuuidUrl = `https://${apiRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${apiKey}`;
     let data;
     try {
         const response = await axios.get(getPuuidUrl);
@@ -34,8 +33,8 @@ const getPuuid = async (gameName, tagLine) => {
 }
 
 // Busca los ID de las ultimas 20 partidas
-const getLastMatches = async (puuid) => {
-    const getLastMatchesUrl = `${url}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=20&api_key=${apiKey}`;
+const getLastMatches = async (puuid, apiRegion) => {
+    const getLastMatchesUrl = `https://${apiRegion}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=20&api_key=${apiKey}`;
     let data;
     try {
         const response = await axios.get(getLastMatchesUrl);
@@ -52,8 +51,8 @@ const getLastMatches = async (puuid) => {
 }
 
 // Busca el detalle de una partida
-const getMatch = async (matchId) => {
-    const getMatchUrl = `${url}/lol/match/v5/matches/${matchId}?api_key=${apiKey}`;
+const getMatch = async (matchId,apiRegion) => {
+    const getMatchUrl = `https://${apiRegion}.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${apiKey}`;
     let data;
     try {
         const response = await axios.get(getMatchUrl);
@@ -72,22 +71,27 @@ const getMatch = async (matchId) => {
 
 let matchesData = [];
 
+/* const mongoUrl = "mongodb://localhost:27017"; // Cambia esto si tu MongoDB no está en localhost
+const dbName = "riot_matches";
+const client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true }); */
+
+
 // Proceso completo
 const fullProcess = async (playersArray) => {
     console.log(playersArray);
     for (const name of playersArray) {
-        const [user, tag] = name.split("#");
+        const [user, tag, apiRegion] = name.split("#");
         
         // Obtener el puuid
-        const userData = await getPuuid(user, tag);
+        const userData = await getPuuid(user, tag, apiRegion);
         if (userData.puuid) {
             // Obtener las últimas 20 partidas
-            const lastMatches = await getLastMatches(userData.puuid);
+            const lastMatches = await getLastMatches(userData.puuid, apiRegion);
             if (lastMatches && lastMatches.length > 0) {
                 for (const match of lastMatches) {
                     // Obtener detalles de la partida
                     await sleep(1200); // Pausa de 1.2 segundos entre cada llamada a getMatch
-                    const matchData = await getMatch(match);
+                    const matchData = await getMatch(match, apiRegion);
                     matchesData.push(matchData);
                 }
             }
@@ -101,5 +105,9 @@ const fullProcess = async (playersArray) => {
         }
     });
 }
+
+/* const mongoUpload = (matchesArray) => {
+    matchesArray.map(match => )
+} */
 
 fullProcess(playersNames);
